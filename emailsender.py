@@ -2,6 +2,7 @@ import smtplib
 from email.mime.text import MIMEText
 from config import Config
 
+
 class EmailSender:
     def __init__(self):
         self.smtp = None
@@ -34,7 +35,9 @@ class EmailSender:
             self.smtp.quit()
             self.smtp = None
 
+
 email_sender = EmailSender()
+
 
 def send_emails(recipients):
     email_sender.send_emails(recipients)
