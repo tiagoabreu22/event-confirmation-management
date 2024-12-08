@@ -19,6 +19,7 @@ serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 # Initialize the EmailSender
 email_sender = EmailSender()
 
+
 ### ROUTES ###
 
 # Create an event
@@ -34,6 +35,7 @@ def create_event():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+
 # Add participants and send confirmation links
 @app.route("/events/<event_id>/send-invitations", methods=["POST"])
 def send_invitations(event_id):
@@ -47,12 +49,16 @@ def send_invitations(event_id):
     if not event:
         return jsonify({"error": "Event not found"}), 404
 
+    event_start_datetime = datetime.datetime.fromisoformat(event["start_datetime"])
+
     recipients = []
     for email in emails:
-        print(email)
-        token = serializer.dumps({"event_id": event_id, "email": email}, salt="email-confirmation")
+        token = serializer.dumps(
+            {"event_id": event_id,
+             "email": email,
+             "event_start_datetime": event_start_datetime.isoformat()}, # add the event start datetime to the token to avoid excessive requests to the database
+            salt="email-confirmation")
         confirmation_url = url_for("confirm_participation", token=token, _external=True)
-        print(confirmation_url)
 
         subject = f"Invitation to {event['name']}"
         body = f"Hi,\n\nYou're invited to '{event['name']}'! Confirm your participation here: {confirmation_url}"
@@ -65,19 +71,29 @@ def send_invitations(event_id):
             "confirmed": False,
             "token": token
         })
-        print("Confirmation saved")
 
     send_emails(recipients)
 
     return jsonify({"message": "Invitations sent successfully"}), 200
 
+
 # Confirm participation
 @app.route("/confirm/<token>", methods=["GET"])
 def confirm_participation(token):
     try:
-        data = serializer.loads(token, salt="email-confirmation", max_age=3600)
+        data = serializer.loads(token, salt="email-confirmation")
         event_id = data["event_id"]
         email = data["email"]
+        event_start_datetime = datetime.datetime.fromisoformat(data["event_start_datetime"])
+        print(event_id)
+        print(email)
+        print(event_start_datetime)
+
+        # Check if token is expired
+        if datetime.datetime.now() > event_start_datetime: # check if event already started
+            print("Token expired")
+            return jsonify({"error": "Event already started, if you want to confirm your participation, please contact the event organizer"}), 400
+        print("Token not expired")
 
         # Update confirmation status
         result = db.confirmations.update_one(
@@ -92,13 +108,16 @@ def confirm_participation(token):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+
 ### HELPER FUNCTIONS ###
 
 def send_emails(recipients):
     email_sender.send_emails(recipients)
 
-#force close the connection when done
+
+# force close the connection when done
 import atexit
+
 atexit.register(email_sender.close)
 
 if __name__ == "__main__":
