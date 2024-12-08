@@ -2,8 +2,7 @@ from flask import Flask, request, jsonify, url_for
 from pymongo import MongoClient
 from bson import ObjectId
 from itsdangerous import URLSafeTimedSerializer
-from email.mime.text import MIMEText
-import smtplib
+from emailsender import EmailSender
 import datetime
 from config import Config
 
@@ -16,6 +15,9 @@ db = client.event_management
 
 # Serializer for generating tokens
 serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+
+# Initialize the EmailSender
+email_sender = EmailSender()
 
 ### ROUTES ###
 
@@ -45,6 +47,7 @@ def send_invitations(event_id):
     if not event:
         return jsonify({"error": "Event not found"}), 404
 
+    recipients = []
     for email in emails:
         print(email)
         token = serializer.dumps({"event_id": event_id, "email": email}, salt="email-confirmation")
@@ -53,7 +56,7 @@ def send_invitations(event_id):
 
         subject = f"Invitation to {event['name']}"
         body = f"Hi,\n\nYou're invited to '{event['name']}'! Confirm your participation here: {confirmation_url}"
-        send_email(email, subject, body)
+        recipients.append((email, subject, body))
 
         # Save confirmation entry
         db.confirmations.insert_one({
@@ -64,6 +67,7 @@ def send_invitations(event_id):
         })
         print("Confirmation saved")
 
+    send_emails(recipients)
 
     return jsonify({"message": "Invitations sent successfully"}), 200
 
@@ -90,24 +94,12 @@ def confirm_participation(token):
 
 ### HELPER FUNCTIONS ###
 
-def send_email(to, subject, body):
-    try:
-        print("!!Sending email")
-        smtp = smtplib.SMTP_SSL(Config.SMTP_SERVER, Config.SMTP_PORT)
-        print("!!Configured with SSL")
-        smtp.login(Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
-        print("!!Logged in")
+def send_emails(recipients):
+    email_sender.send_emails(recipients)
 
-        msg = MIMEText(body)
-        msg["Subject"] = subject
-        msg["From"] = Config.SMTP_USERNAME
-        msg["To"] = to
-
-        smtp.sendmail(Config.SMTP_USERNAME, to, msg.as_string())
-        print("!!Email sent")
-        smtp.quit()
-    except Exception as e:
-        print(f"Error sending email: {e}")
+#force close the connection when done
+import atexit
+atexit.register(email_sender.close)
 
 if __name__ == "__main__":
     app.run(debug=Config.DEBUG)
