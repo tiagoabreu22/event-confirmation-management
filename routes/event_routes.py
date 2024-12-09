@@ -1,8 +1,7 @@
-# routes/event_routes.py
 from flask import Blueprint, request, jsonify, current_app as app, url_for
 from bson import ObjectId
 import datetime
-from emailsender import EmailSender
+from services.emailsender import EmailSender
 
 event_routes = Blueprint('event_routes', __name__)
 email_sender = EmailSender()
