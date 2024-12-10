@@ -7,7 +7,7 @@ from routes.event_routes import event_routes
 
 # Using the application factory pattern
 def create_app():
-    flask_app = Flask(__name__)
+    flask_app = Flask(__name__, template_folder="templates")
     flask_app.config.from_object(Config)
 
     # Initialize resources
