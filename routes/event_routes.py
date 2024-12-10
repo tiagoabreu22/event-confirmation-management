@@ -49,7 +49,7 @@ def send_invitations(event_id):
         db.confirmations.insert_one({
             "event_id": ObjectId(event_id),
             "email": email,
-            "confirmed": False,
+            "status": "pending",
             "token": token
         })
 
