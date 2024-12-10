@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Confirmation</title>
+</head>
+<body>
+    <h1>Confirm Your Attendance</h1>
+    <form action="/confirm/submit-confirmation" method="post">
+        <input type="hidden" name="token" value="{{ token }}">
+        <label>
+            <input type="radio" name="status" value="positive" required>
+            I am going
+        </label><br>
+        <label>
+            <input type="radio" name="status" value="negative" required>
+            I am not going
+        </label><br>
+        <label for="justification">If not going, please provide a reason (optional):</label><br>
+        <textarea name="justification" id="justification"></textarea><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
