@@ -6,6 +6,7 @@ from services.emailsender import EmailSender
 event_routes = Blueprint('event_routes', __name__)
 email_sender = EmailSender()
 
+
 @event_routes.route("", methods=["POST"])
 def create_event():
     db = app.db
@@ -16,6 +17,7 @@ def create_event():
         return jsonify({"message": "Event created successfully", "event_id": str(result.inserted_id)}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
 
 @event_routes.route("<event_id>/send-invitations", methods=["POST"])
 def send_invitations(event_id):
@@ -56,6 +58,16 @@ def send_invitations(event_id):
     send_emails(recipients)
 
     return jsonify({"message": "Invitations sent successfully"}), 200
+
+
+@event_routes.route("", methods=["GET"])
+def get_events():
+    db = app.db
+    events = list(db.events.find())
+    for event in events:
+        event["_id"] = str(event["_id"])
+    return jsonify(events), 200
+
 
 def send_emails(recipients):
     email_sender.send_emails(recipients)
