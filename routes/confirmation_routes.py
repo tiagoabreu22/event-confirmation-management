@@ -15,7 +15,7 @@ def confirm_participation(token):
 
         if datetime.datetime.now() > event_start_datetime:
             return jsonify({
-                               "error": "Token expired"}), 400  # if token is expired dont bother to render the page or get the evnt from the db
+                "error": "Token expired"}), 400  # if token is expired dont bother to render the page or get the evnt from the db
 
         event = db.events.find_one({"_id": ObjectId(data["event_id"])})
         if not event:
