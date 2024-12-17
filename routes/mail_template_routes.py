@@ -9,14 +9,16 @@ def create_mail_template():
     db = app.db
     data = request.json
     template_name = data.get("name")
-    template_content = data.get("content")
+    template_body = data.get("body")
+    template_subject = data.get("subject")
 
-    if not template_content or not template_name:
+    if not template_body or not template_name:
         return {"error": "Missing required fields"}, 400
 
     result = db.mail_templates.insert_one({
         "name": template_name,
-        "content": template_content,
+        "body": template_body,
+        "subject": template_subject,
         "created_at": datetime.datetime.now()
     })
 
