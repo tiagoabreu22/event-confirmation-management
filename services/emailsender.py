@@ -16,8 +16,12 @@ class EmailSender:
         try:
             self.connect()
             print("Connected to SMTP server")
-            for to, subject, body in recipients:
-                msg = MIMEText(body)
+            for to, subject, body, html in recipients:
+                if html:
+                    msg = MIMEText(body, "html")
+                else:
+                    msg = MIMEText(body)
+
                 msg["Subject"] = subject
                 msg["From"] = Config.SMTP_USERNAME
                 msg["To"] = to
