@@ -1,3 +1,5 @@
+from operator import truediv
+
 from flask import Blueprint, request, jsonify, current_app as app, url_for
 from bson import ObjectId
 import datetime
@@ -34,7 +36,15 @@ def send_invitations(event_id):
         return jsonify({"error": "Event not found"}), 404
 
     event_start_datetime = datetime.datetime.fromisoformat(event["start_datetime"])
+    event_end_datetime = datetime.datetime.fromisoformat(event["end_datetime"])
+    mail_template = db.mail_templates.find_one({"_id": ObjectId(event["template_id"])})
+    recipients = prepare_recipients(emails, event, mail_template, event_start_datetime,event_end_datetime ,serializer, event_id, db)
 
+    send_emails(recipients)
+    return jsonify({"message": "Invitations sent successfully"}), 200
+
+
+def prepare_recipients(emails, event, mail_template, event_start_datetime,event_end_datetime, serializer, event_id, db):
     recipients = []
     for email in emails:
         token = serializer.dumps(
@@ -43,22 +53,23 @@ def send_invitations(event_id):
              "event_start_datetime": event_start_datetime.isoformat()},
             salt="email-confirmation")
         confirmation_url = url_for("confirmation_routes.confirm_participation", token=token, _external=True)
+        html = False
+        if mail_template:
+            subject = mail_template["subject"]
+            body = mail_template["body"].replace("{{confirmation_url}}", confirmation_url).replace("{{start_datetime}}", event_start_datetime.isoformat()).replace("{{end_datetime}}", event_end_datetime.isoformat())
+            html = True
+        else:
+            subject = f"Invitation to {event['name']}"
+            body = f"Hi,\n\nYou're invited to '{event['name']}'! Confirm your participation here: {confirmation_url}"
 
-        subject = f"Invitation to {event['name']}"
-        body = f"Hi,\n\nYou're invited to '{event['name']}'! Confirm your participation here: {confirmation_url}"
-        recipients.append((email, subject, body))
-
+        recipients.append((email, subject, body, html))
         db.confirmations.insert_one({
             "event_id": ObjectId(event_id),
             "email": email,
             "status": "pending",
             "token": token
         })
-
-    send_emails(recipients)
-
-    return jsonify({"message": "Invitations sent successfully"}), 200
-
+    return recipients
 
 @event_routes.route("", methods=["GET"])
 def get_events():
