@@ -6,6 +6,7 @@ from routes.mail_template_routes import mail_template_routes
 from routes.responses_routes import responses_routes
 from routes.confirmation_routes import confirmation_routes
 from routes.event_routes import event_routes
+from routes.auth_routes import auth_routes
 
 
 # Using the application factory pattern
@@ -23,6 +24,7 @@ def create_app():
     flask_app.register_blueprint(confirmation_routes, url_prefix='/confirm')
     flask_app.register_blueprint(responses_routes, url_prefix='/responses')
     flask_app.register_blueprint(mail_template_routes, url_prefix='/mail-template')
+    flask_app.register_blueprint(auth_routes, url_prefix='/auth')
 
     return flask_app
 
