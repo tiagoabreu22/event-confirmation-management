@@ -14,7 +14,7 @@ def confirm_participation(token):
         event_start_datetime = datetime.datetime.fromisoformat(data["event_start_datetime"])
 
         if datetime.datetime.now() > event_start_datetime:
-            return render_template("error.html")
+            return render_template("confirmation_expired.html")
 
         event = db.events.find_one({"_id": ObjectId(data["event_id"])})
         if not event:
