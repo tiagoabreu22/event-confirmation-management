@@ -5,3 +5,4 @@ itsdangerous==2.2.0
 gunicorn==23.0.0
 werkzeug
 Flask-JWT-Extended
+marshmallow
