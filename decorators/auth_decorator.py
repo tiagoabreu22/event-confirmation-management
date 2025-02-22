@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import jsonify
-from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
 
 
 def token_required(f):
@@ -20,8 +20,9 @@ def roles_required(*roles):
         @wraps(fn)
         @token_required
         def wrapper(*args, **kwargs):
-            current_user = get_jwt_identity()
-            if current_user["role"] not in roles:
+            claims = get_jwt()
+            accepted_roles = roles[0] if len(roles) == 1 and isinstance(roles[0], list) else roles
+            if claims.get("role") not in accepted_roles:
                 return jsonify({"error": "Access denied"}), 403
             return fn(*args, **kwargs)
 

@@ -2,10 +2,13 @@ from flask import Blueprint, jsonify, current_app as app
 from bson import ObjectId
 from pymongo.errors import PyMongoError
 
+from decorators.auth_decorator import roles_required
+
 responses_routes = Blueprint('responses_routes', __name__)
 
 
 @responses_routes.route("<event_id>", methods=["GET"])
+@roles_required(["user", "admin"])
 def get_responses(event_id):
     db = app.db
     responses = db.confirmations.find({"event_id": ObjectId(event_id)})

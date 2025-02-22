@@ -1,8 +1,9 @@
-from operator import truediv
-
 from flask import Blueprint, request, jsonify, current_app as app, url_for
+from flask_jwt_extended import get_jwt_identity
 from bson import ObjectId
 import datetime
+
+from decorators.auth_decorator import roles_required
 from services.emailsender import EmailSender
 
 event_routes = Blueprint('event_routes', __name__)
@@ -10,11 +11,17 @@ email_sender = EmailSender()
 
 
 @event_routes.route("", methods=["POST"])
+@roles_required(["user", "admin"])
 def create_event():
     db = app.db
     data = request.json
 
     try:
+        current_user = get_jwt_identity()
+        if isinstance(current_user, str):
+            current_user = {"email": current_user}
+        data["created_by"] = current_user["email"]
+        print(data["created_by"])
         result = db.events.insert_one(data)
         return jsonify({"message": "Event created successfully", "event_id": str(result.inserted_id)}), 201
     except Exception as e:
@@ -22,6 +29,7 @@ def create_event():
 
 
 @event_routes.route("<event_id>/send-invitations", methods=["POST"])
+@roles_required(["user", "admin"])
 def send_invitations(event_id):
     serializer = app.serializer
     db = app.db
@@ -72,6 +80,7 @@ def prepare_recipients(emails, event, mail_template, event_start_datetime,event_
     return recipients
 
 @event_routes.route("", methods=["GET"])
+@roles_required(["user", "admin"])
 def get_events():
     db = app.db
     events = list(db.events.find())

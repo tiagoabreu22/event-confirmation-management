@@ -15,4 +15,4 @@ class User:
         return check_password_hash(self.password_hash, password)
 
     def generate_token(self):
-        return create_access_token(identity={'email': self.email, 'role': self.role})
+        return create_access_token(identity=self.email, additional_claims={'role': self.role})
