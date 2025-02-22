@@ -20,6 +20,11 @@ def confirm_participation(token):
         if not event:
             return jsonify({"error": "Event not found"}), 404
 
+        confirmation_deadline = event.get("confirmation_deadline")
+        if confirmation_deadline:
+            if datetime.datetime.now() > datetime.datetime.fromisoformat(confirmation_deadline):
+                return render_template("confirmation_expired.html")
+
         event_name = event["name"]
         event_description = event["description"]
         event_end_datetime = datetime.datetime.fromisoformat(event["end_datetime"])
