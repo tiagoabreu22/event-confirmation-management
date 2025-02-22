@@ -41,7 +41,7 @@ def login():
     if user_data['approved'] is False:
         return jsonify({'error': 'User not yet approved'}), 401
 
-    user = User(email,password=password,role=user_data['role'])
+    user = User(email, password=password, role=user_data['role'])
 
     if not user.check_password(password):
         return jsonify({'error': 'Invalid credentials'}), 401

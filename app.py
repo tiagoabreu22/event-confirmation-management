@@ -2,17 +2,20 @@ from flask import Flask
 from config import Config
 from pymongo import MongoClient
 from itsdangerous import URLSafeTimedSerializer
+from flask_jwt_extended import JWTManager
 from routes.mail_template_routes import mail_template_routes
 from routes.responses_routes import responses_routes
 from routes.confirmation_routes import confirmation_routes
 from routes.event_routes import event_routes
 from routes.auth_routes import auth_routes
+from routes.admin_routes import admin_routes
 
 
 # Using the application factory pattern
 def create_app():
     flask_app = Flask(__name__, template_folder="templates")
     flask_app.config.from_object(Config)
+    jwt = JWTManager(flask_app)
 
     # Initialize resources
     flask_app.serializer = URLSafeTimedSerializer(flask_app.config["SECRET_KEY"])
@@ -25,6 +28,7 @@ def create_app():
     flask_app.register_blueprint(responses_routes, url_prefix='/responses')
     flask_app.register_blueprint(mail_template_routes, url_prefix='/mail-template')
     flask_app.register_blueprint(auth_routes, url_prefix='/auth')
+    flask_app.register_blueprint(admin_routes, url_prefix='/admin')
 
     return flask_app
 
