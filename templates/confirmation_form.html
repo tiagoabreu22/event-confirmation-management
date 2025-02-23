@@ -16,34 +16,41 @@
             align-items: center;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .card {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
             padding: 2rem;
             width: 90%;
             max-width: 500px;
         }
+
         h1 {
             color: #4a5568;
             margin-bottom: 1rem;
         }
+
         p {
             color: #718096;
             margin-bottom: 0.5rem;
         }
+
         form {
             margin-top: 1.5rem;
         }
+
         label {
             display: flex;
             align-items: center;
             margin-bottom: 0.5rem;
             color: #4a5568;
         }
+
         input[type="radio"] {
             margin-right: 0.5rem;
         }
+
         textarea {
             width: 100%;
             padding: 0.5rem;
@@ -52,6 +59,7 @@
             border-radius: 4px;
             resize: vertical;
         }
+
         button {
             background-color: #4299e1;
             color: white;
@@ -62,50 +70,58 @@
             transition: background-color 0.3s ease;
             margin-top: 1rem;
         }
+
         button:hover {
             background-color: #3182ce;
         }
+
         .hidden {
             display: none;
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Confirm Your Attendance</h1>
-        <p><strong>Event:</strong> {{ event_name }}</p>
-        <p><strong>Description:</strong> {{ event_description }}</p>
-        <p><strong>Start:</strong> {{ event_start_datetime }}</p>
-        <p><strong>End:</strong> {{ event_end_datetime }}</p>
-        <form action="/confirm/submit-confirmation" method="post">
-            <input type="hidden" name="token" value="{{ token }}">
-            <label>
-                <input type="radio" name="status" value="positive" required>
-                I am going
-            </label>
-            <label>
-                <input type="radio" name="status" value="negative" required>
-                I am not going
-            </label>
-            <div id="justification-container" class="hidden">
-                <label for="justification">If not going, please provide a reason (optional):</label>
-                <textarea name="justification" id="justification" rows="3"></textarea>
-            </div>
-            <button type="submit">Submit</button>
-        </form>
-    </div>
+<div class="card">
+    <h1>Confirm Your Attendance</h1>
+    <p><strong>Event:</strong> {{ event_name }}</p>
+    <p><strong>Description:</strong> {{ event_description }}</p>
+    <p><strong>Start:</strong> {{ event_start_datetime }}</p>
+    <p><strong>End:</strong> {{ event_end_datetime }}</p>
+    {% if location %}
+        <p><strong>Location:</strong> {{ location }}</p>
+    {% endif %}
+    {% if last_modified %}
+        <p><strong>Your last changes:</strong> {{ last_modified }}</p>
+    {% endif %}
+    <form action="/confirm/submit-confirmation" method="post">
+        <input type="hidden" name="token" value="{{ token }}">
+        <label>
+            <input type="radio" name="status" value="positive" required {% if status== 'positive' %}checked{% endif %}>
+            I am going
+        </label>
+        <label>
+            <input type="radio" name="status" value="negative" required {% if status== 'negative' %}checked{% endif %}>
+            I am not going
+        </label>
+        <div id="justification-container" class="{% if status != 'negative' %}hidden{% endif %}">
+            <label for="justification">If not going, please provide a reason (optional):</label>
+            <textarea name="justification" id="justification" rows="3">{{ justification }}</textarea>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+</div>
 
-    <script>
-        document.querySelectorAll('input[name="status"]').forEach((radio) => {
-            radio.addEventListener('change', (event) => {
-                const justificationContainer = document.getElementById('justification-container');
-                if (event.target.value === 'negative') {
-                    justificationContainer.classList.remove('hidden');
-                } else {
-                    justificationContainer.classList.add('hidden');
-                }
-            });
+<script>
+    document.querySelectorAll('input[name="status"]').forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            const justificationContainer = document.getElementById('justification-container');
+            if (event.target.value === 'negative') {
+                justificationContainer.classList.remove('hidden');
+            } else {
+                justificationContainer.classList.add('hidden');
+            }
         });
-    </script>
+    });
+</script>
 </body>
 </html>

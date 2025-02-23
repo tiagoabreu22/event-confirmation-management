@@ -19,3 +19,5 @@ class Config:
     SMTP_USERNAME = os.getenv("SMTP_USERNAME")
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
+    # JWT EXTENDED
+    JWT_SECRET_KEY = os.getenv("SECRET_KEY")
