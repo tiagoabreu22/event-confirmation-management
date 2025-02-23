@@ -6,7 +6,6 @@ confirmation_routes = Blueprint('confirmation_routes', __name__)
 
 
 @confirmation_routes.route("/<token>", methods=["GET"])
-@confirmation_routes.route("/<token>", methods=["GET"])
 def confirm_participation(token):
     serializer = app.serializer
     db = app.db
@@ -29,6 +28,12 @@ def confirm_participation(token):
         location = event.get("location")
 
         prev_response = db.confirmations.find_one({"event_id": ObjectId(data["event_id"]), "email": data["email"]})
+        confirmation_change_deadline = event.get("confirmation_change_deadline")
+
+        if confirmation_change_deadline:
+            if datetime.datetime.now() > datetime.datetime.fromisoformat(confirmation_change_deadline):
+                return render_template("confirmation_expired.html")
+
         if prev_response:
             last_modified = prev_response.get("lastModified")
             return render_template("confirmation_form.html",

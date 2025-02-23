@@ -128,7 +128,8 @@
   "name": "Event Name",
   "description": "Event Description", (Optional)
   "location": "Event Location", (Optional)
-  "confirmation_deadline" : "2023-11-01T10:00:00", (Optional)
+  "confirmation_deadline" : "2023-11-01T10:00:00", (Optional),
+  "confirmation_change_deadline" : "2023-11-15T10:00:00", (Optional),
   "start_datetime": "2023-12-01T10:00:00",
   "end_datetime": "2023-12-01T12:00:00",
   "template_id": "template_id"
